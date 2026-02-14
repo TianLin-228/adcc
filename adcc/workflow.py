@@ -36,6 +36,7 @@ from .ExcitedStates import ExcitedStates
 from .ReferenceState import ReferenceState as adcc_ReferenceState
 from .solver.lanczos import lanczos
 from .solver.davidson import jacobi_davidson
+from .solver.decoupled_davidson import decoupled_jacobi_davidson
 from .solver.explicit_symmetrisation import (IndexSpinSymmetrisation,
                                              IndexSymmetrisation)
 
@@ -379,6 +380,12 @@ def diagonalise_adcmatrix(matrix, n_states, kind, eigensolver="davidson",
             "Jacobi-Davidson", matrix, kind, solver.davidson.default_print,
             output=output)
         run_eigensolver = jacobi_davidson
+    elif eigensolver == "decoupled_davidson":
+        n_guesses_per_state = 2
+        callback = setup_solver_printing(
+            "Decoupled Jacobi-Davidson", matrix, kind,
+            solver.decoupled_davidson.default_print, output=output)
+        run_eigensolver = decoupled_jacobi_davidson
     elif eigensolver == "lanczos":
         n_guesses_per_state = 1
         callback = setup_solver_printing(
@@ -386,7 +393,8 @@ def diagonalise_adcmatrix(matrix, n_states, kind, eigensolver="davidson",
             output=output)
         run_eigensolver = lanczos
     else:
-        raise InputError(f"Solver {eigensolver} unknown, try 'davidson'.")
+        raise InputError(f"Solver {eigensolver} unknown, "
+                         "try 'davidson' or 'decoupled_davidson'.")
 
     # Obtain or check guesses
     if guesses is None:
